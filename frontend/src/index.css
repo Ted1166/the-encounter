@@ -1,0 +1,28 @@
+@import url("https://fonts.googleapis.com/css2?family=Courier+Prime:wght@400;700&family=IBM+Plex+Sans:wght@400;500;600&display=swap");
+
+:root {
+  --paper: #e7e1ce;
+  --panel: #f2eedf;
+  --ink: #211d17;
+  --rule: #b9ae8f;
+  --danger: #9c3b2e;
+  --safe: #3e5b45;
+  --stamp: #c6501e;
+}
+
+* {
+  box-sizing: border-box;
+}
+
+html,
+body,
+#root {
+  margin: 0;
+  min-height: 100vh;
+}
+
+body {
+  background: var(--paper);
+  color: var(--ink);
+  font-family: "IBM Plex Sans", sans-serif;
+}
