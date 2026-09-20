@@ -1,14 +1,20 @@
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import "./App.css";
 import { evictionPack } from "./scenarios/eviction";
 import { trafficStopPack } from "./scenarios/trafficStop";
-import { applyChoice, currentNode, initState, type EngineState } from "./engine";
+import { wageDisputePack } from "./scenarios/wageDispute";
+import { campusHearingPack } from "./scenarios/campusHearing";
+import { iceEncounterPack } from "./scenarios/iceEncounter";
+import { applyChoice, computeScore, currentNode, initState, scoreLabel, type EngineState } from "./engine";
 import { getNodeStats, recordChoice, type NodeStats } from "./api";
+import { speak, stopSpeaking } from "./speech";
+import { CounterpartFigure } from "./CounterpartFigure";
 import type { Choice, ScenarioPack } from "./types";
 
-const packs: ScenarioPack[] = [evictionPack, trafficStopPack];
+const packs: ScenarioPack[] = [evictionPack, trafficStopPack, wageDisputePack, campusHearingPack, iceEncounterPack];
 
 type Phase = "hub" | "intro" | "prompt" | "reveal" | "ending";
+type Theme = "light" | "dark";
 
 function Gauge({ label, value, tone }: { label: string; value: number; tone: "safe" | "danger" }) {
   const angle = -90 + (value / 100) * 180;
@@ -62,6 +68,12 @@ function StatsPanel({ loading, stats, chosenId }: { loading: boolean; stats: Nod
   );
 }
 
+function getInitialTheme(): Theme {
+  const saved = localStorage.getItem("encounter-theme");
+  if (saved === "light" || saved === "dark") return saved;
+  return window.matchMedia?.("(prefers-color-scheme: dark)").matches ? "dark" : "light";
+}
+
 export default function App() {
   const [pack, setPack] = useState<ScenarioPack | null>(null);
   const [engineState, setEngineState] = useState<EngineState | null>(null);
@@ -69,6 +81,34 @@ export default function App() {
   const [lastChoice, setLastChoice] = useState<Choice | null>(null);
   const [lastStats, setLastStats] = useState<NodeStats | null>(null);
   const [statsLoading, setStatsLoading] = useState(false);
+  const [theme, setTheme] = useState<Theme>(getInitialTheme);
+  const [voiceEnabled, setVoiceEnabled] = useState(() => localStorage.getItem("encounter-voice") === "on");
+
+  useEffect(() => {
+    document.documentElement.dataset.theme = theme;
+    localStorage.setItem("encounter-theme", theme);
+  }, [theme]);
+
+  useEffect(() => {
+    localStorage.setItem("encounter-voice", voiceEnabled ? "on" : "off");
+    if (!voiceEnabled) stopSpeaking();
+  }, [voiceEnabled]);
+
+  const node = pack && engineState ? currentNode(pack, engineState) : null;
+
+  useEffect(() => {
+    if (!voiceEnabled) return;
+    if (phase === "prompt" && node) {
+      speak(`${node.eyebrow}. ${node.title}. ${node.body.join(" ")}`);
+    } else if (phase === "reveal" && lastChoice) {
+      speak(`${lastChoice.label}. ${lastChoice.reveal ?? ""}`);
+    } else if (phase === "ending" && node) {
+      speak(`${node.title}. ${node.body.join(" ")}`);
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [phase, node?.id, lastChoice?.id, voiceEnabled]);
+
+  useEffect(() => stopSpeaking, []);
 
   function handleSelectPack(selected: ScenarioPack) {
     setPack(selected);
@@ -92,8 +132,8 @@ export default function App() {
 
   function handleContinue() {
     if (!pack || !engineState) return;
-    const node = currentNode(pack, engineState);
-    setPhase(node.kind === "ending" ? "ending" : "prompt");
+    const n = currentNode(pack, engineState);
+    setPhase(n.kind === "ending" ? "ending" : "prompt");
   }
 
   function handleRestart() {
@@ -105,6 +145,7 @@ export default function App() {
   }
 
   function handleBackToHub() {
+    stopSpeaking();
     setPack(null);
     setEngineState(null);
     setPhase("hub");
@@ -112,13 +153,32 @@ export default function App() {
     setLastStats(null);
   }
 
-  const node = pack && engineState ? currentNode(pack, engineState) : null;
+  const score = node?.kind === "ending" && node.ending && engineState ? computeScore(engineState, node.ending) : null;
 
   return (
     <div className="page">
       <div className="wrap">
-        <div className="folder-tab">
-          {phase === "hub" ? "THE ENCOUNTER" : phase === "ending" ? "CASE CLOSED" : pack!.title.toUpperCase()}
+        <div className="topbar">
+          <div className="folder-tab">
+            {phase === "hub" ? "THE ENCOUNTER" : phase === "ending" ? "CASE CLOSED" : pack!.title.toUpperCase()}
+          </div>
+          <div className="top-controls">
+            <button
+              className="icon-btn"
+              onClick={() => setVoiceEnabled((v) => !v)}
+              aria-pressed={voiceEnabled}
+              title="Toggle voice-over"
+            >
+              {voiceEnabled ? "🔊" : "🔇"}
+            </button>
+            <button
+              className="icon-btn"
+              onClick={() => setTheme((t) => (t === "dark" ? "light" : "dark"))}
+              title="Toggle theme"
+            >
+              {theme === "dark" ? "☀️" : "🌙"}
+            </button>
+          </div>
         </div>
 
         {phase === "hub" && (
@@ -152,7 +212,10 @@ export default function App() {
 
         {phase === "prompt" && pack && engineState && node && (
           <div className="case-card">
-            <Meters state={engineState} />
+            <div className="scene-row">
+              <Meters state={engineState} />
+              <CounterpartFigure role={pack.role} risk={engineState.risk} />
+            </div>
             <p className="eyebrow">{node.eyebrow}</p>
             <div className={`document ${node.kind === "document" ? "document--official" : ""}`}>
               <h2>{node.title}</h2>
@@ -174,9 +237,12 @@ export default function App() {
           </div>
         )}
 
-        {phase === "reveal" && engineState && lastChoice && (
+        {phase === "reveal" && pack && engineState && lastChoice && (
           <div className="case-card">
-            <Meters state={engineState} />
+            <div className="scene-row">
+              <Meters state={engineState} />
+              <CounterpartFigure role={pack.role} risk={engineState.risk} />
+            </div>
             <p className="eyebrow">You chose</p>
             <div className="document">
               <h2>{lastChoice.label}</h2>
@@ -201,6 +267,12 @@ export default function App() {
               ))}
             </div>
             <Meters state={engineState} />
+            {score !== null && (
+              <div className="score-badge">
+                <span className="score-value">{score}</span>
+                <span className="score-label">{scoreLabel(score)}</span>
+              </div>
+            )}
             <h3>What to actually remember</h3>
             <ul className="takeaways">
               {pack.takeaways.map((t, i) => (

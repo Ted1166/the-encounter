@@ -9,6 +9,38 @@
   max-width: 640px;
 }
 
+.topbar {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-left: 24px;
+}
+
+.top-controls {
+  display: flex;
+  gap: 6px;
+  padding-bottom: 4px;
+}
+
+.icon-btn {
+  background: none;
+  color: var(--ink);
+  border: 1px solid var(--rule);
+  border-radius: 999px;
+  width: 32px;
+  height: 32px;
+  font-size: 14px;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: border-color 0.15s ease;
+}
+
+.icon-btn:hover {
+  border-color: var(--ink);
+}
+
 .folder-tab {
   display: inline-block;
   background: var(--stamp);
@@ -18,7 +50,6 @@
   letter-spacing: 0.04em;
   padding: 6px 16px;
   border-radius: 6px 6px 0 0;
-  margin-left: 24px;
 }
 
 .case-card {
@@ -93,6 +124,7 @@
 .pack-card {
   text-align: left;
   background: var(--paper);
+  color: var(--ink);
   border: 1px solid var(--rule);
   border-radius: 4px;
   padding: 16px;
@@ -164,11 +196,19 @@
   margin-top: 20px;
 }
 
+.scene-row {
+  display: flex;
+  align-items: flex-start;
+  justify-content: center;
+  gap: 28px;
+  margin-bottom: 8px;
+  flex-wrap: wrap;
+}
+
 .meters {
   display: flex;
   gap: 24px;
   justify-content: center;
-  margin-bottom: 8px;
 }
 
 .gauge {
@@ -279,6 +319,92 @@ h3 {
 
 .ending--bad .document {
   border-color: var(--danger);
+}
+
+.counterpart {
+  text-align: center;
+  width: 90px;
+}
+
+.counterpart-svg {
+  width: 100%;
+  height: auto;
+}
+
+.counterpart-frame {
+  fill: var(--paper);
+  stroke: var(--rule);
+  stroke-width: 2;
+  stroke-dasharray: 3 3;
+}
+
+.counterpart-shape {
+  fill: var(--rule);
+  transition: fill 0.4s ease;
+}
+
+.counterpart--tense .counterpart-shape {
+  fill: var(--danger);
+}
+
+.counterpart--alert .counterpart-shape {
+  fill: color-mix(in srgb, var(--rule) 55%, var(--danger));
+}
+
+.counterpart-brow {
+  stroke: var(--panel);
+  stroke-width: 2.5;
+  stroke-linecap: round;
+  transition: d 0.3s ease;
+}
+
+.counterpart-icon {
+  color: var(--ink);
+  opacity: 0.8;
+}
+
+.tension-lines line {
+  stroke: var(--danger);
+  stroke-width: 1.5;
+  stroke-linecap: round;
+  animation: tension-flicker 0.9s ease-in-out infinite;
+}
+
+@keyframes tension-flicker {
+
+  0%,
+  100% {
+    opacity: 0.3;
+  }
+
+  50% {
+    opacity: 1;
+  }
+}
+
+.counterpart-caption {
+  font-size: 11px;
+  opacity: 0.65;
+  margin-top: 2px;
+}
+
+.score-badge {
+  display: flex;
+  align-items: baseline;
+  gap: 8px;
+  justify-content: center;
+  margin: 4px 0 18px;
+}
+
+.score-value {
+  font-family: "Courier Prime", monospace;
+  font-size: 30px;
+  font-weight: 700;
+}
+
+.score-label {
+  font-size: 13px;
+  opacity: 0.7;
 }
 
 @media (max-width: 480px) {

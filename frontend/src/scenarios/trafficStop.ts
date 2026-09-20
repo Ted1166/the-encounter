@@ -3,6 +3,7 @@ import type { ScenarioPack } from "../types";
 export const trafficStopPack: ScenarioPack = {
   id: "traffic-stop",
   title: "The Stop",
+  role: "officer",
   tagline: "Red and blue lights in your mirror. What you say in the next two minutes shapes everything that follows.",
   startNode: "stop",
   sources: [

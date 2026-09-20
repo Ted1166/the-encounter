@@ -1,1 +1,24 @@
-{}
+{
+  "eviction": {
+    "notice": {
+      "ignore": 1
+    },
+    "summons": {
+      "throw-away": 1
+    }
+  },
+  "campus-hearing": {
+    "email": {
+      "request-policy": 1,
+      "ignore-email": 1
+    },
+    "prep": {
+      "write-timeline": 1,
+      "say-nothing-plan": 1
+    },
+    "hearing": {
+      "ask-appeal": 1,
+      "calm-refer": 1
+    }
+  }
+}

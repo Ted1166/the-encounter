@@ -25,3 +25,18 @@ export function applyChoice(state: EngineState, choice: Choice): EngineState {
 export function currentNode(pack: ScenarioPack, state: EngineState) {
   return pack.nodes[state.nodeId];
 }
+
+export type Ending = "good" | "mixed" | "bad";
+
+export function computeScore(state: EngineState, ending: Ending): number {
+  const base = Math.round((state.rights + (100 - state.risk)) / 2);
+  const modifier = ending === "good" ? 10 : ending === "mixed" ? 0 : -20;
+  return clamp(base + modifier);
+}
+
+export function scoreLabel(score: number): string {
+  if (score >= 80) return "Sharp-handled";
+  if (score >= 60) return "Held your ground";
+  if (score >= 40) return "Could've gone better";
+  return "Rough outcome";
+}

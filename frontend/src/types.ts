@@ -26,6 +26,7 @@ export interface ScenarioPack {
   title: string;
   tagline: string;
   startNode: string;
+  role: "landlord" | "officer" | "agent" | "employer" | "administrator";
   nodes: Record<string, Node>;
   sources: string[];
   takeaways: string[];

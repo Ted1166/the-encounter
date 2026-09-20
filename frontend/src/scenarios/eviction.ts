@@ -3,6 +3,7 @@ import type { ScenarioPack } from "../types";
 export const evictionPack: ScenarioPack = {
   id: "eviction",
   title: "The Notice",
+  role: "landlord",
   tagline: "A pay-or-quit notice just showed up on your door. What you do in the next ten minutes matters more than you'd think.",
   startNode: "notice",
   sources: [
